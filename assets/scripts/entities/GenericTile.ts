@@ -20,10 +20,10 @@ export enum ETileColor {
 @ccclass('GenericTile')
 export class GenericTile extends GenericEntity implements ITile {
 	@property({ type: Enum(ETileType) })
-	protected type: ETileType;
+	protected type: ETileType = ETileType.Default;
 
 	@property({ type: Enum(ETileColor) })
-	protected color: ETileColor;
+	protected color: ETileColor = ETileColor.Blue;
 
 	protected _fieldManager: FieldManager;
 	protected _sprite: Sprite;

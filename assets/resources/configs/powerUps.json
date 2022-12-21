@@ -1,0 +1,9 @@
+{
+	"power_ups": [
+		{
+			"type": "Shake",
+			"max_count": 2,
+			"start_count": 2
+		}
+	]
+}

@@ -11,6 +11,8 @@ export class FieldManager extends Component {
 	protected xOffset: number = 0;
 	@property({ type: CCInteger })
 	protected yOffset: number = 0;
+	@property({ type: CCInteger })
+	protected tileSize: number = 175;
 
 	@property({ type: CCInteger })
 	protected rowsCount: number = 0;
@@ -49,8 +51,23 @@ export class FieldManager extends Component {
 
 		var tile = this._poolsManager.spawn(this.tilesPrefabs[tileNumber], this.node, position) as GenericTile;
 
-		tile.moveOnPosition(new Vec3(this.xOffset + row * 175, this.yOffset - col * 175));
+		tile.moveOnPosition(new Vec3(this.xOffset + row * this.tileSize, this.yOffset - col * this.tileSize));
 		return tile;
+	}
+
+	shake() {
+		for (var i = 0; i < this.rowsCount; i++) {
+			for (var j = 0; j < this.colsCount; j++) {
+				var newTileNum = randomRangeInt(i * this.colsCount + j, this.colsCount * this.rowsCount);
+				var buff = this._field[i][j];
+				this._field[i][j] = this._field[Math.floor(newTileNum / this.colsCount)][newTileNum % this.colsCount];
+				this._field[i][j].getNode().setSiblingIndex(this.rowsCount - i);
+				this._field[i][j].moveOnPosition(
+					new Vec3(this.xOffset + j * this.tileSize, this.yOffset - i * this.tileSize)
+				);
+				this._field[Math.floor(newTileNum / this.colsCount)][newTileNum % this.colsCount] = buff;
+			}
+		}
 	}
 
 	onTileClicked(tile: GenericTile) {
@@ -59,6 +76,7 @@ export class FieldManager extends Component {
 		var jCol = col.indexOf(tile);
 		this.destroyTile(iRow, jCol);
 		this.moveTiles();
+		//TODO Insert particles, movement animation, AudioManager etc
 	}
 
 	moveTiles() {
@@ -69,7 +87,9 @@ export class FieldManager extends Component {
 					for (var k = j; k >= 0; k--) {
 						if (this._field[k][i]) {
 							this._field[j][i] = this._field[k][i];
-							this._field[j][i].moveOnPosition(new Vec3(this.xOffset + i * 175, this.yOffset - j * 175));
+							this._field[j][i].moveOnPosition(
+								new Vec3(this.xOffset + i * this.tileSize, this.yOffset - j * this.tileSize)
+							);
 							this._field[k][i] = null;
 
 							break;
@@ -79,7 +99,11 @@ export class FieldManager extends Component {
 
 				// If still null - spawn new
 				if (!this._field[j][i]) {
-					this._field[j][i] = this.createTile(i, j, new Vec3(this.xOffset + i * 175, this.yOffset + 175));
+					this._field[j][i] = this.createTile(
+						i,
+						j,
+						new Vec3(this.xOffset + i * this.tileSize, this.yOffset + this.tileSize)
+					);
 				}
 			}
 		}
