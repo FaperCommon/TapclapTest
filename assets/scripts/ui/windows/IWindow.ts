@@ -1,4 +1,5 @@
 export interface IWindow {
-	show: () => void;
+	show: (args: object[]) => void;
 	hide: () => void;
+	isShowing: () => boolean;
 }
