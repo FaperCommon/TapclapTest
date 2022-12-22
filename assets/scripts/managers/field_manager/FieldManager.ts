@@ -50,7 +50,8 @@ export class FieldManager extends Component implements ISubject {
 
 			for (var j = 0; j < this._colsCount; j++) {
 				this._field[i][j] = this.createTile(j, i, Vec3.ZERO);
-				this._field[i][j].getNode().setSiblingIndex(this._rowsCount);
+				console.log(i);
+				this._field[i][j].getNode().setSiblingIndex(i);
 			}
 		}
 

@@ -83,7 +83,8 @@ export class GameManager extends Component implements ISubject, IObserver {
 	}
 
 	getProgress() {
-		return this._fieldManager.getScore() / this._scoreGoal;
+		var progress = this._fieldManager.getScore() / this._scoreGoal;
+		return progress > 1 ? 1 : progress;
 	}
 
 	checkState() {
