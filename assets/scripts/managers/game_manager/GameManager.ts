@@ -2,6 +2,10 @@ import { _decorator, Component, JsonAsset, Node, resources } from 'cc';
 import { EPowerUp, PowerUpsManager } from '../power_ups_manager/PowerUpsManager';
 import { FieldManager } from '../field_manager/FieldManager';
 import loadConfig from '../../utils/loadConfig';
+import { IObserver } from '../../interfaces/IObserver';
+import { ISubject } from '../../interfaces/ISubject';
+import { WindowsManager } from '../../ui/windows_manager/WindowsManager';
+import { GameOverWindow } from '../../ui/windows/GameOverWindow';
 
 const { ccclass, property } = _decorator;
 
@@ -12,12 +16,16 @@ export enum EGameState {
 }
 
 @ccclass('GameManager')
-export class GameManager extends Component {
+export class GameManager extends Component implements ISubject, IObserver {
 	@property({ type: FieldManager })
 	protected fieldManager: FieldManager;
 
+	@property({ type: WindowsManager })
+	protected windowManager: WindowsManager;
+
 	private _state: EGameState = EGameState.Game;
 	private _powerUpsManager: PowerUpsManager;
+	private _observers: IObserver[] = [];
 
 	get FieldManager() {
 		return this.fieldManager;
@@ -28,12 +36,21 @@ export class GameManager extends Component {
 	}
 
 	set State(value: EGameState) {
-		//TODO Replace with Events
 		this._state = value;
+		this.notify();
 	}
 
 	start() {
+		this.fieldManager.attach(this);
 		console.log('[GameManager] GameManager initiated');
+	}
+
+	callback(subject: ISubject): void {
+		if ((subject as FieldManager) && !this.fieldManager.hasMoves()) {
+			this._state = EGameState.GameOver;
+			this.windowManager.show(GameOverWindow);
+			this.notify();
+		}
 	}
 
 	getPowerUpsManager(): Promise<PowerUpsManager> {
@@ -52,4 +69,28 @@ export class GameManager extends Component {
 	}
 
 	update(deltaTime: number) {}
+
+	attach(observer: IObserver): void {
+		const isExist = this._observers.find((x) => x == observer);
+		if (isExist) {
+			return console.log('[GameManager] Subject: Observer has been attached already.');
+		}
+
+		this._observers.push(observer);
+	}
+
+	detach(observer: IObserver): void {
+		const observerIndex = this._observers.indexOf(observer);
+		if (observerIndex === -1) {
+			return console.log('[GameManager] Subject: Nonexistent observer.');
+		}
+
+		this._observers.splice(observerIndex, 1);
+	}
+
+	notify(): void {
+		for (const observer of this._observers) {
+			observer.callback(this);
+		}
+	}
 }

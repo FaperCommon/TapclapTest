@@ -1,7 +1,7 @@
 import { _decorator, Button, Component, EventHandler, find, Label, Node } from 'cc';
 import { BaseWindow } from './BaseWindow';
 import { PauseWindow } from './PauseWindow';
-import { GameManager } from '../../managers/game_manager/GameManager';
+import { EGameState, GameManager } from '../../managers/game_manager/GameManager';
 import { EPowerUp } from '../../managers/power_ups_manager/PowerUpsManager';
 import { IObserver } from '../../interfaces/IObserver';
 import { ISubject } from '../../interfaces/ISubject';
@@ -54,6 +54,10 @@ export class GameOverlay extends BaseWindow implements IObserver {
 	}
 
 	onShakeButtonClick(event: Event, CustomEventData) {
+		if (this.gameManager.State != EGameState.Game) {
+			return;
+		}
+
 		this.gameManager.getPowerUpsManager().then((manager) => {
 			manager.activatePowerUp(EPowerUp.Shake);
 			this.shakeButtonLabel.string = `Shake: ${manager.getCountPowerUp(EPowerUp.Shake)}`;

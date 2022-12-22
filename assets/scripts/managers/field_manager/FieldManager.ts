@@ -3,6 +3,7 @@ import { GenericTile } from '../../entities/GenericTile';
 import { PoolsManager } from '../pools_manager/PoolsManager';
 import { ISubject } from '../../interfaces/ISubject';
 import { IObserver } from '../../interfaces/IObserver';
+import { EGameState, GameManager } from '../game_manager/GameManager';
 
 const { randomRangeInt } = math;
 const { ccclass, property } = _decorator;
@@ -24,9 +25,13 @@ export class FieldManager extends Component implements ISubject {
 	@property({ type: Prefab, tooltip: 'Must be ITile' })
 	protected tilesPrefabs: Prefab[] = [];
 
+	@property({ type: GameManager })
+	protected gameManager: GameManager;
+
 	protected _field: GenericTile[][];
 	protected _poolsManager: PoolsManager;
 	protected _score: number = 0;
+	protected _hasMoves: boolean = true;
 	private _observers: IObserver[] = [];
 
 	start() {
@@ -75,14 +80,24 @@ export class FieldManager extends Component implements ISubject {
 	}
 
 	onTileClicked(tile: GenericTile) {
+		if (this.gameManager.State != EGameState.Game) {
+			return;
+		}
+
 		var col = this._field.find((x) => x.some((y) => y == tile));
 		var iRow = this._field.indexOf(col);
 		var jCol = col.indexOf(tile);
-		this._score += this.destroyTile(iRow, jCol);
-		this.moveTiles();
-		//TODO Insert particles, movement animation, AudioManager etc
 
-		this.notify();
+		let score = this.destroyTile(iRow, jCol);
+
+		if (score > 0) {
+			this._score += score;
+			this.moveTiles();
+			//TODO Insert particles, movement animation, AudioManager etc
+			this.checkMoves();
+
+			this.notify();
+		}
 	}
 
 	moveTiles() {
@@ -184,5 +199,27 @@ export class FieldManager extends Component implements ISubject {
 		for (const observer of this._observers) {
 			observer.callback(this);
 		}
+	}
+
+	checkMoves() {
+		for (var row = 0; row < this.rowsCount; row++) {
+			for (var col = 0; col < this.colsCount; col++) {
+				var color = this._field[row][col].getColor();
+
+				var hasRightNeighbor = col < this.colsCount - 1 && this._field[row][col + 1].getColor() == color;
+
+				var hasBottomNeighbor = row < this.rowsCount - 1 && this._field[row + 1][col].getColor() == color;
+
+				if (hasRightNeighbor || hasBottomNeighbor) {
+					return;
+				}
+			}
+		}
+
+		this._hasMoves = false;
+	}
+
+	hasMoves() {
+		return this._hasMoves;
 	}
 }
