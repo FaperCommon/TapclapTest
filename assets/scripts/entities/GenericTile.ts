@@ -30,6 +30,7 @@ export class GenericTile extends GenericEntity implements ITile {
 
 	protected _fieldManager: FieldManager;
 	protected _sprite: Sprite;
+	protected _movementIntervalId: number;
 
 	public get Sprite() {
 		if (!this._sprite) {
@@ -62,17 +63,14 @@ export class GenericTile extends GenericEntity implements ITile {
 		// TODO Particles and another things
 	}
 
-	moveOnPosition(pos: Vec3) {
-		// TODO Replace with animations
-		this.node.setPosition(pos);
-		/*
-		this.schedule(
-			(deltaTime: number) => {
-				this.changePositionLerp(pos);
-			},
-			0.02,
-			50
-		);*/
+	async moveOnPosition(pos: Vec3) {
+		clearInterval(this._movementIntervalId);
+		this._movementIntervalId = setInterval(() => {
+			this.changePositionLerp(pos);
+			if (Vec3.distance(this.node.position, pos) <= 0.5) {
+				clearInterval(this._movementIntervalId);
+			}
+		}, 20);
 	}
 
 	private changePositionLerp(pos: Vec3) {
