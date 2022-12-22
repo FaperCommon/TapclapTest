@@ -6,5 +6,6 @@ export interface ITile {
 	moveOnPosition: (pos: Vec3) => void;
 	blow: () => Promise<void>;
 	getColor: () => ETileColor;
+	getScore: () => number;
 	getType: () => ETileType;
 }

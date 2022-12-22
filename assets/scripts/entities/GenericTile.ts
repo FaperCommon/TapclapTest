@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3, Sprite, ccenum, Enum, Vec2, director } from 'cc';
+import { _decorator, Component, Node, Vec3, Sprite, ccenum, Enum, Vec2, director, CCInteger } from 'cc';
 import { FieldManager } from '../managers/field_manager/FieldManager';
 import { ITile } from './interfaces/ITile';
 import { GenericEntity } from './GenericEntity';
@@ -24,6 +24,9 @@ export class GenericTile extends GenericEntity implements ITile {
 
 	@property({ type: Enum(ETileColor) })
 	protected color: ETileColor = ETileColor.Blue;
+
+	@property({ type: Enum(CCInteger) })
+	protected score: number = 1;
 
 	protected _fieldManager: FieldManager;
 	protected _sprite: Sprite;
@@ -54,7 +57,8 @@ export class GenericTile extends GenericEntity implements ITile {
 		super.start();
 	}
 
-	async blow() {
+	async blow(): Promise<void> {
+		return Promise.resolve();
 		// TODO Particles and another things
 	}
 
@@ -84,6 +88,10 @@ export class GenericTile extends GenericEntity implements ITile {
 
 	getColor() {
 		return this.color;
+	}
+
+	getScore() {
+		return this.score;
 	}
 
 	getNode() {

@@ -13,9 +13,15 @@ export enum EGameState {
 
 @ccclass('GameManager')
 export class GameManager extends Component {
+	@property({ type: FieldManager })
+	protected fieldManager: FieldManager;
+
 	private _state: EGameState = EGameState.Game;
 	private _powerUpsManager: PowerUpsManager;
-	private _field: FieldManager;
+
+	get FieldManager() {
+		return this.fieldManager;
+	}
 
 	get State() {
 		return this._state;
@@ -27,8 +33,6 @@ export class GameManager extends Component {
 	}
 
 	start() {
-		this._field = this.node.getComponentInChildren(FieldManager);
-
 		console.log('[GameManager] GameManager initiated');
 	}
 
@@ -38,7 +42,7 @@ export class GameManager extends Component {
 		} else {
 			return loadConfig('configs/powerUps')
 				.then((config) => {
-					return (this._powerUpsManager = new PowerUpsManager(config.power_ups, this._field));
+					return (this._powerUpsManager = new PowerUpsManager(config.power_ups, this.fieldManager));
 				})
 				.catch((err) => {
 					console.log(`[GameManager] Config load error ${err}`);

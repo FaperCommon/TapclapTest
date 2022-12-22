@@ -1,12 +1,14 @@
 import { _decorator, Component, Vec3, CCInteger, math, Prefab } from 'cc';
 import { GenericTile } from '../../entities/GenericTile';
 import { PoolsManager } from '../pools_manager/PoolsManager';
+import { ISubject } from '../../interfaces/ISubject';
+import { IObserver } from '../../interfaces/IObserver';
 
 const { randomRangeInt } = math;
 const { ccclass, property } = _decorator;
 
 @ccclass('FieldManager')
-export class FieldManager extends Component {
+export class FieldManager extends Component implements ISubject {
 	@property({ type: CCInteger })
 	protected xOffset: number = 0;
 	@property({ type: CCInteger })
@@ -24,6 +26,8 @@ export class FieldManager extends Component {
 
 	protected _field: GenericTile[][];
 	protected _poolsManager: PoolsManager;
+	protected _score: number = 0;
+	private _observers: IObserver[] = [];
 
 	start() {
 		this._poolsManager = new PoolsManager(this.tilesPrefabs);
@@ -74,9 +78,11 @@ export class FieldManager extends Component {
 		var col = this._field.find((x) => x.some((y) => y == tile));
 		var iRow = this._field.indexOf(col);
 		var jCol = col.indexOf(tile);
-		this.destroyTile(iRow, jCol);
+		this._score += this.destroyTile(iRow, jCol);
 		this.moveTiles();
 		//TODO Insert particles, movement animation, AudioManager etc
+
+		this.notify();
 	}
 
 	moveTiles() {
@@ -109,7 +115,9 @@ export class FieldManager extends Component {
 		}
 	}
 
-	destroyTile(row: number, col: number, isRecursed: boolean = false) {
+	destroyTile(row: number, col: number, isRecursed: boolean = false): number {
+		var score = 0;
+
 		var color = this._field[row][col].getColor();
 
 		var hasLeftNeighbor = col > 0 && this._field[row][col - 1] && this._field[row][col - 1].getColor() == color;
@@ -128,22 +136,53 @@ export class FieldManager extends Component {
 			tile.blow().then(() => {
 				this._poolsManager.despawn(tile.getNode());
 			});
+			score += tile.getScore();
 		}
 
 		if (hasLeftNeighbor && this._field[row][col - 1]) {
-			this.destroyTile(row, col - 1, true);
+			score += this.destroyTile(row, col - 1, true);
 		}
 
 		if (hasTopNeighbor && this._field[row - 1][col]) {
-			this.destroyTile(row - 1, col, true);
+			score += this.destroyTile(row - 1, col, true);
 		}
 
 		if (hasRightNeighbor && this._field[row][col + 1]) {
-			this.destroyTile(row, col + 1, true);
+			score += this.destroyTile(row, col + 1, true);
 		}
 
 		if (hasBottomNeighbor && this._field[row + 1][col]) {
-			this.destroyTile(row + 1, col, true);
+			score += this.destroyTile(row + 1, col, true);
+		}
+
+		return score;
+	}
+
+	getScore() {
+		return this._score;
+	}
+
+	attach(observer: IObserver): void {
+		const isExist = this._observers.find((x) => x == observer);
+		if (isExist) {
+			return console.log('[FieldManager] Subject: Observer has been attached already.');
+		}
+
+		this._observers.push(observer);
+	}
+
+	detach(observer: IObserver): void {
+		const observerIndex = this._observers.indexOf(observer);
+		if (observerIndex === -1) {
+			return console.log('[FieldManager] Subject: Nonexistent observer.');
+		}
+
+		this._observers.splice(observerIndex, 1);
+	}
+
+	notify(): void {
+		for (const observer of this._observers) {
+			observer.callback(this);
 		}
 	}
 }
