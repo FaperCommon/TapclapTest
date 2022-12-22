@@ -4,6 +4,7 @@ import { PoolsManager } from '../pools_manager/PoolsManager';
 import { ISubject } from '../../interfaces/ISubject';
 import { IObserver } from '../../interfaces/IObserver';
 import { EGameState, GameManager } from '../game_manager/GameManager';
+import { PowerUpsManager } from '../power_ups_manager/PowerUpsManager';
 
 const { randomRangeInt } = math;
 const { ccclass, property } = _decorator;
@@ -66,6 +67,32 @@ export class FieldManager extends Component implements ISubject {
 		return tile;
 	}
 
+	blast(row: number, col: number, radius: number) {
+		var topBorder = row - radius < 0 ? 0 : row - radius;
+		var leftBorder = col - radius < 0 ? 0 : col - radius;
+		var bottomBorder = row + radius > this._rowsCount ? this._rowsCount - 1 : row + radius;
+		var rightBorder = col + radius > this._colsCount ? this._colsCount - 1 : col + radius;
+
+		var score = 0;
+
+		for (var i = topBorder; i <= bottomBorder; i++) {
+			for (var j = leftBorder; j <= rightBorder; j++) {
+				var tile = this._field[i][j];
+				this._field[i][j] = null;
+				this._poolsManager.despawn(tile.getNode());
+
+				score += tile.getScore();
+			}
+		}
+
+		this._score += score;
+
+		this.moveTiles();
+		this.checkMoves();
+
+		this.notify();
+	}
+
 	shake() {
 		for (var i = 0; i < this._rowsCount; i++) {
 			for (var j = 0; j < this._colsCount; j++) {
@@ -90,6 +117,11 @@ export class FieldManager extends Component implements ISubject {
 		var col = this._field.find((x) => x.some((y) => y == tile));
 		var iRow = this._field.indexOf(col);
 		var jCol = col.indexOf(tile);
+
+		if (this._gameManager.PowerUpsManager.hasEnabledActivePowerUp()) {
+			this._gameManager.PowerUpsManager.tileSelected(iRow, jCol);
+			return;
+		}
 
 		let score = this.destroyTile(iRow, jCol);
 
@@ -194,7 +226,7 @@ export class FieldManager extends Component implements ISubject {
 	detach(observer: IObserver): void {
 		const observerIndex = this._observers.indexOf(observer);
 		if (observerIndex === -1) {
-			return console.log('[FieldManager] Subject: Nonexistent observer.');
+			return console.log('[FieldManager] Subject: Non existent observer.');
 		}
 
 		this._observers.splice(observerIndex, 1);

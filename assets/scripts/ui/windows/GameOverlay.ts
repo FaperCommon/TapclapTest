@@ -16,10 +16,14 @@ export class GameOverlay extends BaseWindow implements IObserver {
 	protected pauseButton: Button;
 	@property({ type: Button })
 	protected shakeButton: Button;
+	@property({ type: Button })
+	protected blastButton: Button;
 
 	// * For localization
 	@property({ type: Label })
 	protected shakeButtonLabel: Label;
+	@property({ type: Label })
+	protected blastButtonLabel: Label;
 	@property({ type: Label })
 	protected scoreLabel: Label;
 	@property({ type: Label })
@@ -41,10 +45,7 @@ export class GameOverlay extends BaseWindow implements IObserver {
 	initialize() {
 		this.pauseButton.clickEvents.push(super.buildEventHandler('onPauseButtonClick'));
 		this.shakeButton.clickEvents.push(super.buildEventHandler('onShakeButtonClick'));
-
-		this.gameManager.getPowerUpsManager().then((manager) => {
-			this.shakeButtonLabel.string = `Shake: ${manager.getCountPowerUp(EPowerUp.Shake)}`;
-		});
+		this.blastButton.clickEvents.push(super.buildEventHandler('onBlastButtonClick'));
 
 		this.fieldManager.attach(this);
 	}
@@ -53,9 +54,7 @@ export class GameOverlay extends BaseWindow implements IObserver {
 
 	callback(subject: ISubject) {
 		if (subject as FieldManager) {
-			this.scoreLabel.string = `Score: ${this.fieldManager.getScore()} / ${this.gameManager.getScoreGoal()}`;
-			this.movesLabel.string = `Moves: ${this.fieldManager.getMoves()} / ${this.gameManager.getMovesGoal()}`;
-			this.progressBar.setProgress(this.gameManager.getProgress());
+			this.updateUI();
 		}
 	}
 
@@ -69,9 +68,27 @@ export class GameOverlay extends BaseWindow implements IObserver {
 			return;
 		}
 
-		this.gameManager.getPowerUpsManager().then((manager) => {
-			manager.activatePowerUp(EPowerUp.Shake);
-			this.shakeButtonLabel.string = `Shake: ${manager.getCountPowerUp(EPowerUp.Shake)}`;
-		});
+		this.gameManager.PowerUpsManager.activatePowerUp(EPowerUp.Shake);
+
+		this.updateUI();
+	}
+
+	onBlastButtonClick(event: Event, CustomEventData) {
+		if (this.gameManager.State != EGameState.Game) {
+			return;
+		}
+
+		this.gameManager.PowerUpsManager.activatePowerUp(EPowerUp.Blast);
+
+		this.updateUI();
+	}
+
+	updateUI() {
+		this.blastButtonLabel.string = `Blast: ${this.gameManager.PowerUpsManager.getCountPowerUp(EPowerUp.Blast)}`;
+		this.shakeButtonLabel.string = `Shake: ${this.gameManager.PowerUpsManager.getCountPowerUp(EPowerUp.Shake)}`;
+
+		this.scoreLabel.string = `Score: ${this.fieldManager.getScore()} / ${this.gameManager.getScoreGoal()}`;
+		this.movesLabel.string = `Moves: ${this.fieldManager.getMoves()} / ${this.gameManager.getMovesGoal()}`;
+		this.progressBar.setProgress(this.gameManager.getProgress());
 	}
 }

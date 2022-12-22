@@ -4,6 +4,12 @@
 			"type": "Shake",
 			"max_count": 2,
 			"start_count": 2
+		},
+		{
+			"type": "Blast",
+			"max_count": 2,
+			"start_count": 1,
+			"radius": 2
 		}
 	]
 }

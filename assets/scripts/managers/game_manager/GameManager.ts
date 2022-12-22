@@ -29,6 +29,10 @@ export class GameManager extends Component implements ISubject, IObserver {
 	private _movesGoal: number;
 	private _observers: IObserver[] = [];
 
+	get PowerUpsManager() {
+		return this._powerUpsManager;
+	}
+
 	get State() {
 		return this._state;
 	}
@@ -37,6 +41,8 @@ export class GameManager extends Component implements ISubject, IObserver {
 		if (this._state != value) {
 			this._state = value;
 			this.changeState();
+
+			this.notify();
 		}
 	}
 
@@ -48,15 +54,25 @@ export class GameManager extends Component implements ISubject, IObserver {
 	}
 
 	initialize() {
-		return loadConfig('configs/game')
+		loadConfig('configs/powerUps')
 			.then((config) => {
-				this._scoreGoal = config.score_goal;
-				this._movesGoal = config.moves_goal;
-				this._fieldManager.initialize(config.field_size.rows, config.field_size.cols);
-				this.State = EGameState.Game;
+				this._powerUpsManager = new PowerUpsManager(config.power_ups, this._fieldManager);
+			})
+			.then(() => {
+				loadConfig('configs/game')
+					.then((config) => {
+						this._scoreGoal = config.score_goal;
+						this._movesGoal = config.moves_goal;
+						this._fieldManager.initialize(config.field_size.rows, config.field_size.cols);
+						this.State = EGameState.Game;
+					})
+					.catch((err) => {
+						console.log(`[GameManager] Config load error ${err}`);
+					});
 			})
 			.catch((err) => {
 				console.log(`[GameManager] Config load error ${err}`);
+				return err;
 			});
 	}
 
@@ -91,23 +107,6 @@ export class GameManager extends Component implements ISubject, IObserver {
 			case EGameState.GameOver:
 				this.windowManager.show(GameOverWindow);
 				break;
-		}
-
-		this.notify();
-	}
-
-	getPowerUpsManager(): Promise<PowerUpsManager> {
-		if (this._powerUpsManager) {
-			return Promise.resolve(this._powerUpsManager);
-		} else {
-			return loadConfig('configs/powerUps')
-				.then((config) => {
-					return (this._powerUpsManager = new PowerUpsManager(config.power_ups, this._fieldManager));
-				})
-				.catch((err) => {
-					console.log(`[GameManager] Config load error ${err}`);
-					return err;
-				});
 		}
 	}
 
