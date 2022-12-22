@@ -17,70 +17,73 @@ export class FieldManager extends Component implements ISubject {
 	@property({ type: CCInteger })
 	protected tileSize: number = 175;
 
-	@property({ type: CCInteger })
-	protected rowsCount: number = 0;
-	@property({ type: CCInteger })
-	protected colsCount: number = 0;
-
 	@property({ type: Prefab, tooltip: 'Must be ITile' })
 	protected tilesPrefabs: Prefab[] = [];
 
-	@property({ type: GameManager })
-	protected gameManager: GameManager;
+	protected _rowsCount: number = 0;
+	protected _colsCount: number = 0;
 
+	protected _gameManager: GameManager;
+
+	protected _score: number = 0;
+	protected _moves: number = 0;
 	protected _field: GenericTile[][];
 	protected _poolsManager: PoolsManager;
-	protected _score: number = 0;
 	protected _hasMoves: boolean = true;
 	private _observers: IObserver[] = [];
 
 	start() {
 		this._poolsManager = new PoolsManager(this.tilesPrefabs);
-		this.initField();
+		this._gameManager = this.getComponent(GameManager);
 	}
 
 	update(deltaTime: number) {}
 
-	initField() {
+	initialize(rows: number, cols: number) {
+		this._rowsCount = rows;
+		this._colsCount = cols;
+
 		this._field = [];
-		for (var i = 0; i < this.rowsCount; i++) {
+		for (var i = 0; i < this._rowsCount; i++) {
 			this._field[i] = [];
 
-			for (var j = 0; j < this.colsCount; j++) {
+			for (var j = 0; j < this._colsCount; j++) {
 				this._field[i][j] = this.createTile(j, i, Vec3.ZERO);
-				this._field[i][j].getNode().setSiblingIndex(this.rowsCount - i);
+				this._field[i][j].getNode().setSiblingIndex(this._rowsCount);
 			}
 		}
 
-		console.log('[FieldManager] field initiated');
+		this.notify();
+		console.log('[FieldManager] field Initialized');
 	}
 
 	createTile(row: number, col: number, position: Vec3): GenericTile {
 		var tileNumber = randomRangeInt(0, this.tilesPrefabs.length);
 
 		var tile = this._poolsManager.spawn(this.tilesPrefabs[tileNumber], this.node, position) as GenericTile;
-
 		tile.moveOnPosition(new Vec3(this.xOffset + row * this.tileSize, this.yOffset - col * this.tileSize));
+
 		return tile;
 	}
 
 	shake() {
-		for (var i = 0; i < this.rowsCount; i++) {
-			for (var j = 0; j < this.colsCount; j++) {
-				var newTileNum = randomRangeInt(i * this.colsCount + j, this.colsCount * this.rowsCount);
+		for (var i = 0; i < this._rowsCount; i++) {
+			for (var j = 0; j < this._colsCount; j++) {
+				var newTileNum = randomRangeInt(i * this._colsCount + j, this._colsCount * this._rowsCount);
+
 				var buff = this._field[i][j];
-				this._field[i][j] = this._field[Math.floor(newTileNum / this.colsCount)][newTileNum % this.colsCount];
-				this._field[i][j].getNode().setSiblingIndex(this.rowsCount - i);
+				this._field[i][j] = this._field[Math.floor(newTileNum / this._colsCount)][newTileNum % this._colsCount];
+				this._field[i][j].getNode().setSiblingIndex(this._rowsCount - i);
 				this._field[i][j].moveOnPosition(
 					new Vec3(this.xOffset + j * this.tileSize, this.yOffset - i * this.tileSize)
 				);
-				this._field[Math.floor(newTileNum / this.colsCount)][newTileNum % this.colsCount] = buff;
+				this._field[Math.floor(newTileNum / this._colsCount)][newTileNum % this._colsCount] = buff;
 			}
 		}
 	}
 
 	onTileClicked(tile: GenericTile) {
-		if (this.gameManager.State != EGameState.Game) {
+		if (this._gameManager.State != EGameState.Game) {
 			return;
 		}
 
@@ -92,6 +95,8 @@ export class FieldManager extends Component implements ISubject {
 
 		if (score > 0) {
 			this._score += score;
+			this._moves++;
+
 			this.moveTiles();
 			//TODO Insert particles, movement animation, AudioManager etc
 			this.checkMoves();
@@ -101,8 +106,8 @@ export class FieldManager extends Component implements ISubject {
 	}
 
 	moveTiles() {
-		for (var i = 0; i < this.rowsCount - 1; i++) {
-			for (var j = this.rowsCount - 1; j >= 0; j--) {
+		for (var i = 0; i < this._rowsCount - 1; i++) {
+			for (var j = this._rowsCount - 1; j >= 0; j--) {
 				// Drop down if null
 				if (!this._field[j][i]) {
 					for (var k = j; k >= 0; k--) {
@@ -140,10 +145,10 @@ export class FieldManager extends Component implements ISubject {
 		var hasTopNeighbor = row > 0 && this._field[row - 1][col] && this._field[row - 1][col].getColor() == color;
 
 		var hasRightNeighbor =
-			col < this.colsCount - 1 && this._field[row][col + 1] && this._field[row][col + 1].getColor() == color;
+			col < this._colsCount - 1 && this._field[row][col + 1] && this._field[row][col + 1].getColor() == color;
 
 		var hasBottomNeighbor =
-			row < this.rowsCount - 1 && this._field[row + 1][col] && this._field[row + 1][col].getColor() == color;
+			row < this._rowsCount - 1 && this._field[row + 1][col] && this._field[row + 1][col].getColor() == color;
 
 		if (isRecursed || hasLeftNeighbor || hasTopNeighbor || hasRightNeighbor || hasBottomNeighbor) {
 			var tile = this._field[row][col];
@@ -202,13 +207,13 @@ export class FieldManager extends Component implements ISubject {
 	}
 
 	checkMoves() {
-		for (var row = 0; row < this.rowsCount; row++) {
-			for (var col = 0; col < this.colsCount; col++) {
+		for (var row = 0; row < this._rowsCount; row++) {
+			for (var col = 0; col < this._colsCount; col++) {
 				var color = this._field[row][col].getColor();
 
-				var hasRightNeighbor = col < this.colsCount - 1 && this._field[row][col + 1].getColor() == color;
+				var hasRightNeighbor = col < this._colsCount - 1 && this._field[row][col + 1].getColor() == color;
 
-				var hasBottomNeighbor = row < this.rowsCount - 1 && this._field[row + 1][col].getColor() == color;
+				var hasBottomNeighbor = row < this._rowsCount - 1 && this._field[row + 1][col].getColor() == color;
 
 				if (hasRightNeighbor || hasBottomNeighbor) {
 					return;
@@ -221,5 +226,9 @@ export class FieldManager extends Component implements ISubject {
 
 	hasMoves() {
 		return this._hasMoves;
+	}
+
+	getMoves() {
+		return this._moves;
 	}
 }

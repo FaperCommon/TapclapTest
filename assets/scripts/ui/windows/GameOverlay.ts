@@ -5,6 +5,8 @@ import { EGameState, GameManager } from '../../managers/game_manager/GameManager
 import { EPowerUp } from '../../managers/power_ups_manager/PowerUpsManager';
 import { IObserver } from '../../interfaces/IObserver';
 import { ISubject } from '../../interfaces/ISubject';
+import { FieldManager } from '../../managers/field_manager/FieldManager';
+import { ProgressBar } from '../ProgressBar';
 
 const { ccclass, property } = _decorator;
 
@@ -20,12 +22,18 @@ export class GameOverlay extends BaseWindow implements IObserver {
 	protected shakeButtonLabel: Label;
 	@property({ type: Label })
 	protected scoreLabel: Label;
+	@property({ type: Label })
+	protected movesLabel: Label;
+
+	@property({ type: ProgressBar })
+	protected progressBar: ProgressBar;
 
 	@property({ type: GameManager })
-	protected gameManager: GameManager;
+	protected gameManager: GameManager = null;
+	@property({ type: FieldManager })
+	protected fieldManager: FieldManager = null;
 
 	start() {
-		console.log(this.gameManager);
 		super.start();
 		this.initialize();
 	}
@@ -38,14 +46,17 @@ export class GameOverlay extends BaseWindow implements IObserver {
 			this.shakeButtonLabel.string = `Shake: ${manager.getCountPowerUp(EPowerUp.Shake)}`;
 		});
 
-		this.gameManager.FieldManager.attach(this);
-		this.callback(this.gameManager.FieldManager);
+		this.fieldManager.attach(this);
 	}
 
 	update(deltaTime: number) {}
 
 	callback(subject: ISubject) {
-		this.scoreLabel.string = `Score: ${this.gameManager.FieldManager.getScore()}`;
+		if (subject as FieldManager) {
+			this.scoreLabel.string = `Score: ${this.fieldManager.getScore()} / ${this.gameManager.getScoreGoal()}`;
+			this.movesLabel.string = `Moves: ${this.fieldManager.getMoves()} / ${this.gameManager.getMovesGoal()}`;
+			this.progressBar.setProgress(this.gameManager.getProgress());
+		}
 	}
 
 	onPauseButtonClick(event: Event, CustomEventData) {

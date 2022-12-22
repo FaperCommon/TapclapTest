@@ -3,8 +3,8 @@ import { BaseWindow } from './BaseWindow';
 import { SceneManager } from '../../managers/scene_manager/SceneManager';
 const { ccclass, property } = _decorator;
 
-@ccclass('GameOverWindow')
-export class GameOverWindow extends BaseWindow {
+@ccclass('WinWindow')
+export class WinWindow extends BaseWindow {
 	@property({ type: Button })
 	protected replayButton: Button;
 	@property({ type: Button })
@@ -16,7 +16,7 @@ export class GameOverWindow extends BaseWindow {
 	@property({ type: Label })
 	protected menuButtonLabel: Label;
 	@property({ type: Label })
-	protected gameOverLabel: Label;
+	protected victoryLabel: Label;
 
 	start() {
 		super.start();

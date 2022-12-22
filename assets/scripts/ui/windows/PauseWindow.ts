@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, EventHandler, Label, Node } from 'cc';
+import { _decorator, Button, Component, director, EventHandler, Label, Node } from 'cc';
 import { BaseWindow } from './BaseWindow';
 import { SceneManager } from '../../managers/scene_manager/SceneManager';
 import { GameOverlay } from './GameOverlay';
@@ -11,12 +11,16 @@ export class PauseWindow extends BaseWindow {
 	protected menuButton: Button;
 	@property({ type: Button })
 	protected resumeButton: Button;
+	@property({ type: Button })
+	protected replayButton: Button;
 
 	// * For localization
 	@property({ type: Label })
 	protected menuButtonLabel: Label;
 	@property({ type: Label })
 	protected resumeButtonLabel: Label;
+	@property({ type: Label })
+	protected replayButtonLabel: Label;
 
 	start() {
 		super.start();
@@ -26,6 +30,7 @@ export class PauseWindow extends BaseWindow {
 	initialize() {
 		this.menuButton.clickEvents.push(super.buildEventHandler('onMenuButtonClick'));
 		this.resumeButton.clickEvents.push(super.buildEventHandler('onResumeClick'));
+		this.replayButton.clickEvents.push(super.buildEventHandler('onReplayClick'));
 	}
 
 	update(deltaTime: number) {}
@@ -33,6 +38,10 @@ export class PauseWindow extends BaseWindow {
 	onMenuButtonClick(event: Event, CustomEventData) {
 		//TODO Remove hardcode, move scene change to gamemanager
 		SceneManager.changeScene('main_menu');
+	}
+
+	onReplayClick(event: Event, CustomEventData) {
+		SceneManager.reloadScene();
 	}
 
 	onResumeClick(event: Event, CustomEventData) {

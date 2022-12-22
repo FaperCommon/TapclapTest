@@ -99,4 +99,8 @@ export class GenericTile extends GenericEntity implements ITile {
 	update(deltaTime: number) {
 		super.update(deltaTime);
 	}
+
+	onDestroy() {
+		clearInterval(this._movementIntervalId);
+	}
 }

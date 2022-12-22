@@ -26,6 +26,10 @@ export class SceneManager {
 		director.loadScene(sceneName, onSceneLaunched);
 	}
 
+	static reloadScene() {
+		director.loadScene(director.getScene().name);
+	}
+
 	private static changeSceneFromBuild(sceneName: string, onSceneLaunched: Director.OnSceneLaunched) {
 		throw new Error('[SceneManager] changeSceneFromBuild non defined');
 		// TODO Some asset bundles and etc

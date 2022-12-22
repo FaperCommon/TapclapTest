@@ -1,5 +1,5 @@
 import { _decorator, Component, Node } from 'cc';
-import { IWindow } from '../windows/IWindow';
+import { IWindow } from '../windows/interfaces/IWindow';
 import { BaseWindow } from '../windows/BaseWindow';
 
 const { ccclass, property } = _decorator;
