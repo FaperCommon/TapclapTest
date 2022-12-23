@@ -43,10 +43,6 @@ export class GameOverlay extends BaseWindow implements IObserver {
 	}
 
 	initialize() {
-		this.pauseButton.clickEvents.push(super.buildEventHandler('onPauseButtonClick'));
-		this.shakeButton.clickEvents.push(super.buildEventHandler('onShakeButtonClick'));
-		this.blastButton.clickEvents.push(super.buildEventHandler('onBlastButtonClick'));
-
 		this.fieldManager.attach(this);
 	}
 

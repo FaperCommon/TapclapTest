@@ -4,7 +4,6 @@ import { PoolsManager } from '../pools_manager/PoolsManager';
 import { ISubject } from '../../interfaces/ISubject';
 import { IObserver } from '../../interfaces/IObserver';
 import { EGameState, GameManager } from '../game_manager/GameManager';
-import { PowerUpsManager } from '../power_ups_manager/PowerUpsManager';
 
 const { randomRangeInt } = math;
 const { ccclass, property } = _decorator;
@@ -15,8 +14,11 @@ export class FieldManager extends Component implements ISubject {
 	protected xOffset: number = 0;
 	@property({ type: CCInteger })
 	protected yOffset: number = 0;
+
 	@property({ type: CCInteger })
-	protected tileSize: number = 175;
+	protected tileWidth: number = 0;
+	@property({ type: CCInteger })
+	protected tileHight: number = 0;
 
 	@property({ type: Prefab, tooltip: 'Must be ITile' })
 	protected tilesPrefabs: Prefab[] = [];
@@ -50,8 +52,7 @@ export class FieldManager extends Component implements ISubject {
 
 			for (var j = 0; j < this._colsCount; j++) {
 				this._field[i][j] = this.createTile(j, i, Vec3.ZERO);
-				console.log(i);
-				this._field[i][j].getNode().setSiblingIndex(i);
+				this._field[i][j].getNode().setSiblingIndex(0);
 			}
 		}
 
@@ -63,7 +64,7 @@ export class FieldManager extends Component implements ISubject {
 		var tileNumber = randomRangeInt(0, this.tilesPrefabs.length);
 
 		var tile = this._poolsManager.spawn(this.tilesPrefabs[tileNumber], this.node, position) as GenericTile;
-		tile.moveOnPosition(new Vec3(this.xOffset + row * this.tileSize, this.yOffset - col * this.tileSize));
+		tile.moveOnPosition(new Vec3(this.xOffset + row * this.tileWidth, this.yOffset - col * this.tileHight));
 
 		return tile;
 	}
@@ -103,7 +104,7 @@ export class FieldManager extends Component implements ISubject {
 				this._field[i][j] = this._field[Math.floor(newTileNum / this._colsCount)][newTileNum % this._colsCount];
 				this._field[i][j].getNode().setSiblingIndex(this._rowsCount - i);
 				this._field[i][j].moveOnPosition(
-					new Vec3(this.xOffset + j * this.tileSize, this.yOffset - i * this.tileSize)
+					new Vec3(this.xOffset + j * this.tileWidth, this.yOffset - i * this.tileHight)
 				);
 				this._field[Math.floor(newTileNum / this._colsCount)][newTileNum % this._colsCount] = buff;
 			}
@@ -139,7 +140,7 @@ export class FieldManager extends Component implements ISubject {
 	}
 
 	moveTiles() {
-		for (var i = 0; i < this._rowsCount - 1; i++) {
+		for (var i = 0; i < this._colsCount; i++) {
 			for (var j = this._rowsCount - 1; j >= 0; j--) {
 				// Drop down if null
 				if (!this._field[j][i]) {
@@ -147,7 +148,7 @@ export class FieldManager extends Component implements ISubject {
 						if (this._field[k][i]) {
 							this._field[j][i] = this._field[k][i];
 							this._field[j][i].moveOnPosition(
-								new Vec3(this.xOffset + i * this.tileSize, this.yOffset - j * this.tileSize)
+								new Vec3(this.xOffset + i * this.tileWidth, this.yOffset - j * this.tileHight)
 							);
 							this._field[k][i] = null;
 
@@ -161,7 +162,7 @@ export class FieldManager extends Component implements ISubject {
 					this._field[j][i] = this.createTile(
 						i,
 						j,
-						new Vec3(this.xOffset + i * this.tileSize, this.yOffset + this.tileSize)
+						new Vec3(this.xOffset + i * this.tileWidth, this.yOffset + this.tileHight)
 					);
 				}
 			}

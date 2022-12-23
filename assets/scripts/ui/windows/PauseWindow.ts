@@ -27,11 +27,7 @@ export class PauseWindow extends BaseWindow {
 		this.initialize();
 	}
 
-	initialize() {
-		this.menuButton.clickEvents.push(super.buildEventHandler('onMenuButtonClick'));
-		this.resumeButton.clickEvents.push(super.buildEventHandler('onResumeClick'));
-		this.replayButton.clickEvents.push(super.buildEventHandler('onReplayClick'));
-	}
+	initialize() {}
 
 	update(deltaTime: number) {}
 

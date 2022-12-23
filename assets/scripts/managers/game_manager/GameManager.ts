@@ -92,8 +92,6 @@ export class GameManager extends Component implements ISubject, IObserver {
 			(!this._fieldManager.hasMoves() || this._fieldManager.getMoves() >= this._movesGoal) &&
 			this._fieldManager.getScore() < this._scoreGoal
 		) {
-			console.log(this._fieldManager.getScore());
-			console.log(this._scoreGoal);
 			this.State = EGameState.GameOver;
 		} else if (this._fieldManager.getScore() >= this._scoreGoal) {
 			this.State = EGameState.Win;

@@ -18,9 +18,7 @@ export class MainMenuWindow extends BaseWindow {
 		this.initialize();
 	}
 
-	initialize() {
-		this.playButton.clickEvents.push(super.buildEventHandler('onPlayButtonClick'));
-	}
+	initialize() {}
 
 	update(deltaTime: number) {}
 

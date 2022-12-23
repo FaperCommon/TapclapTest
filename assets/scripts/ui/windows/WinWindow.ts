@@ -23,10 +23,7 @@ export class WinWindow extends BaseWindow {
 		this.initialize();
 	}
 
-	initialize() {
-		this.replayButton.clickEvents.push(super.buildEventHandler('onReplayButtonClick'));
-		this.menuButton.clickEvents.push(super.buildEventHandler('onMenuButtonClick'));
-	}
+	initialize() {}
 
 	update(deltaTime: number) {}
 

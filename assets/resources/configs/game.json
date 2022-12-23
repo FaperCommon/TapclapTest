@@ -1,8 +1,8 @@
 {
-	"score_goal": 40,
+	"score_goal": 50,
 	"moves_goal": 10,
 	"field_size": {
 		"rows": 10,
-		"cols": 9
+		"cols": 8
 	}
 }

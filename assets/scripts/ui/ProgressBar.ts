@@ -7,7 +7,7 @@ export class ProgressBar extends Component {
 	@property({ type: CCInteger })
 	protected minScale: number = 0;
 	@property({ type: CCInteger })
-	protected maxScale: number = 1.7;
+	protected maxScale: number = 1;
 
 	@property({ type: Node })
 	protected progressBar: Node = null;

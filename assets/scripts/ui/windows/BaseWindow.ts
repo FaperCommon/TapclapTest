@@ -1,5 +1,5 @@
 import { _decorator, Component, EventHandler, Node } from 'cc';
-import { IWindow } from './IWindow';
+import { IWindow } from './interfaces/IWindow';
 import { WindowsManager } from '../windows_manager/WindowsManager';
 
 const { ccclass, property } = _decorator;
@@ -26,7 +26,7 @@ export class BaseWindow extends Component implements IWindow {
 	protected buildEventHandler(handler: string): EventHandler {
 		var buttonEvent = new EventHandler();
 		buttonEvent.target = this.node;
-		buttonEvent.component = BaseWindow.name;
+		buttonEvent.component = this.name;
 		buttonEvent.handler = handler;
 		return buttonEvent;
 	}
